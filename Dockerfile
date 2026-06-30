@@ -4,16 +4,15 @@ FROM node:alpine
 WORKDIR /usr/src/app
 
 # Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+# Copy the manifest and pnpm lockfile first so this layer is cached
+COPY package.json pnpm-lock.yaml ./
 
 RUN apk add --no-cache bash
 RUN apk add --no-cache curl
 
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
+# Enable pnpm via corepack (bundled with Node) and install from the frozen lockfile
+RUN corepack enable
+RUN pnpm install --frozen-lockfile --prod
 
 # Bundle app source
 COPY . .
